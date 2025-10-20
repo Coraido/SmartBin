@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:smart_bin_app/widgets/bin_card.dart';
-import 'package:smart_bin_app/models/bin_model.dart';
+import 'package:smart_bin_app/models/bin_data.dart';
 import 'package:smart_bin_app/services/firebase_service.dart';
+import 'package:smart_bin_app/services/settings_service.dart';
 
 class MyBinsScreen extends StatefulWidget {
   const MyBinsScreen({super.key});
@@ -12,6 +13,8 @@ class MyBinsScreen extends StatefulWidget {
 
 class _MyBinsScreenState extends State<MyBinsScreen> {
   final FirebaseService _firebaseService = FirebaseService();
+  final SettingsService _settingsService = SettingsService();
+  final Set<String> _notifiedBins = {};
 
   @override
   void initState() {
@@ -20,36 +23,75 @@ class _MyBinsScreenState extends State<MyBinsScreen> {
   }
 
   Future<void> _initializeApp() async {
-    // Initialize notifications
-    await _firebaseService.initializeNotifications();
+    // Initialize notifications if enabled
+    if (_settingsService.notificationsEnabled) {
+      await _firebaseService.initializeNotifications();
+    }
     
-    // Create initial bins if needed (for first run)
-    await _firebaseService.createInitialBins();
+    // Create initial bin if needed (for first run)
+    await _firebaseService.createInitialBin();
   }
 
-  Color _getProgressColor(String status) {
-    switch (status) {
-      case 'FULL':
-        return Colors.red;
-      case 'OK':
-        return Colors.green;
-      default:
-        return const Color(0xFF64B5F6); // Light blue
+  void _checkBinAlerts(List<BinData> bins) {
+    if (!_settingsService.notificationsEnabled || !_settingsService.fullBinAlerts) {
+      return;
+    }
+
+    for (var bin in bins) {
+      if (_settingsService.shouldAlert(bin.fillLevel) && !_notifiedBins.contains(bin.id)) {
+        // Send notification
+        _firebaseService.sendBinAlert(bin);
+        _notifiedBins.add(bin.id);
+        
+        // Show in-app notification
+        if (mounted && _settingsService.soundEnabled) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.warning_amber_rounded, color: Colors.white),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      '${bin.name} is ${bin.fillLevel}% full!',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.orange[700],
+              duration: const Duration(seconds: 4),
+              action: SnackBarAction(
+                label: 'VIEW',
+                textColor: Colors.white,
+                onPressed: () {
+                  // Navigate to bin details
+                },
+              ),
+            ),
+          );
+        }
+      } else if (bin.fillLevel < _settingsService.alertThreshold) {
+        // Remove from notified set if bin is no longer full
+        _notifiedBins.remove(bin.id);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      backgroundColor: const Color(0xFFE8EAF6),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFE8EAF6),
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'OVERVIEW',
               style: TextStyle(
                 color: Color(0xFF9E9E9E),
@@ -58,11 +100,11 @@ class _MyBinsScreenState extends State<MyBinsScreen> {
                 letterSpacing: 1.2,
               ),
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text(
               'My Bins',
               style: TextStyle(
-                color: Colors.black,
+                color: theme.textTheme.bodyLarge?.color,
                 fontWeight: FontWeight.bold,
                 fontSize: 28,
               ),
@@ -73,7 +115,7 @@ class _MyBinsScreenState extends State<MyBinsScreen> {
           Container(
             margin: const EdgeInsets.only(right: 16, top: 8),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: theme.cardTheme.color,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
@@ -84,7 +126,7 @@ class _MyBinsScreenState extends State<MyBinsScreen> {
               ],
             ),
             child: IconButton(
-              icon: const Icon(Icons.notifications_outlined, color: Color(0xFF3F51B5)),
+              icon: Icon(Icons.notifications_outlined, color: theme.primaryColor),
               onPressed: () {
                 // Show notification settings or history
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -98,9 +140,14 @@ class _MyBinsScreenState extends State<MyBinsScreen> {
           ),
         ],
       ),
-      body: StreamBuilder<List<BinModel>>(
-        stream: _firebaseService.getBinsStream(),
+      body: StreamBuilder<List<BinData>>(
+        stream: _firebaseService.getAllBinsStream(),
         builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            // Check for alerts when data updates
+            _checkBinAlerts(snapshot.data!);
+          }
+          
           if (snapshot.hasError) {
             return Center(
               child: Column(
@@ -150,17 +197,8 @@ class _MyBinsScreenState extends State<MyBinsScreen> {
             );
           }
 
-          // Find last emptied bin for the bottom section
-          BinModel? lastEmptied;
-          DateTime? mostRecentEmpty;
+          // Find last emptied bin for the bottom section (simplified for now)
           
-          for (var bin in bins) {
-            if (mostRecentEmpty == null || bin.lastEmptied.isAfter(mostRecentEmpty)) {
-              mostRecentEmpty = bin.lastEmptied;
-              lastEmptied = bin;
-            }
-          }
-
           return Column(
             children: [
               Expanded(
@@ -176,114 +214,17 @@ class _MyBinsScreenState extends State<MyBinsScreen> {
                         binName: bin.name,
                         fillLevel: bin.fillLevel,
                         status: bin.status,
-                        estimatedFullTime: bin.estimatedFullTime,
-                        progressColor: _getProgressColor(bin.status),
-                        onEmptied: () async {
-                          await _firebaseService.markBinAsEmptied(bin.id);
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('${bin.name} marked as emptied'),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-                          }
-                        },
+                        estimatedFullTime: bin.estimatedFullIn,
+                        progressColor: bin.getProgressColor(),
                       ),
                     );
                   },
                 ),
               ),
-              // Bottom info section
-              if (lastEmptied != null)
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, -2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'LAST EMPTIED',
-                            style: TextStyle(
-                              color: Color(0xFF9E9E9E),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 1.0,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            lastEmptied.name,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            _getTimeAgo(lastEmptied.lastEmptied),
-                            style: const TextStyle(
-                              color: Color(0xFF757575),
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          const Text(
-                            'ESTIMATED FULL IN',
-                            style: TextStyle(
-                              color: Color(0xFF9E9E9E),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 1.0,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            lastEmptied.estimatedFullTime,
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF3F51B5),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
             ],
           );
         },
       ),
     );
-  }
-
-  String _getTimeAgo(DateTime dateTime) {
-    final difference = DateTime.now().difference(dateTime);
-    
-    if (difference.inDays > 0) {
-      return '${difference.inDays} day${difference.inDays == 1 ? '' : 's'} ago';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours} hour${difference.inHours == 1 ? '' : 's'} ago';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} minute${difference.inMinutes == 1 ? '' : 's'} ago';
-    } else {
-      return 'Just now';
-    }
   }
 }

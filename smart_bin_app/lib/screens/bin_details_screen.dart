@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:smart_bin_app/models/bin_model.dart';
+import 'package:smart_bin_app/models/bin_data.dart';
 import 'package:smart_bin_app/services/firebase_service.dart';
 
 class BinDetailsScreen extends StatelessWidget {
-  final BinModel bin;
+  final BinData bin;
 
   const BinDetailsScreen({super.key, required this.bin});
 
@@ -96,7 +96,7 @@ class BinDetailsScreen extends StatelessWidget {
                         const Icon(Icons.schedule, color: Colors.white, size: 20),
                         const SizedBox(width: 8),
                         Text(
-                          'Full in ${bin.estimatedFullTime}',
+                          'Full in ${bin.estimatedFullIn}',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
@@ -137,23 +137,15 @@ class BinDetailsScreen extends StatelessWidget {
                   const SizedBox(height: 12),
                   _buildInfoCard(
                     'Last Updated',
-                    _formatDateTime(bin.lastUpdated),
+                    _formatDateTime(bin.lastUpdated ?? DateTime.now()),
                     Icons.update,
                     const Color(0xFF3F51B5),
-                    _getTimeAgo(bin.lastUpdated),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildInfoCard(
-                    'Last Emptied',
-                    _formatDateTime(bin.lastEmptied),
-                    Icons.delete_sweep,
-                    const Color(0xFF00897B),
-                    _getTimeAgo(bin.lastEmptied),
+                    _getTimeAgo(bin.lastUpdated ?? DateTime.now()),
                   ),
                   const SizedBox(height: 12),
                   _buildInfoCard(
                     'Estimated Full',
-                    bin.estimatedFullTime,
+                    bin.estimatedFullIn,
                     Icons.schedule,
                     const Color(0xFFFF6F00),
                     'Based on current fill rate',

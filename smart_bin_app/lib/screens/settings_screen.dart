@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:smart_bin_app/services/settings_service.dart';
+import 'package:smart_bin_app/services/firebase_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -8,95 +10,55 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool _notificationsEnabled = true;
-  bool _fullBinAlerts = true;
-  bool _dailySummary = false;
-  bool _soundEnabled = true;
-  int _alertThreshold = 80;
+  final SettingsService _settingsService = SettingsService();
+  final FirebaseService _firebaseService = FirebaseService();
+
+  @override
+  void initState() {
+    super.initState();
+    _settingsService.addListener(_onSettingsChanged);
+  }
+
+  @override
+  void dispose() {
+    _settingsService.removeListener(_onSettingsChanged);
+    super.dispose();
+  }
+
+  void _onSettingsChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Settings', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: const Color(0xFF3F51B5),
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
         automaticallyImplyLeading: false,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Profile Section
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF5E35B1), Color(0xFF7E57C2)],
-                    ),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.person, color: Colors.white, size: 32),
-                ),
-                const SizedBox(width: 16),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'User Account',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF212121),
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Manage your profile',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF757575),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(Icons.chevron_right, color: Colors.grey[400]),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 24),
-
           // Notifications Section
-          const Text(
+          Text(
             'Notifications',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF212121),
+              color: theme.textTheme.bodyLarge?.color,
             ),
           ),
           const SizedBox(height: 12),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: theme.cardTheme.color,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
@@ -112,11 +74,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   'Enable Notifications',
                   'Receive alerts about your bins',
                   Icons.notifications_active,
-                  _notificationsEnabled,
-                  (value) {
-                    setState(() {
-                      _notificationsEnabled = value;
-                    });
+                  _settingsService.notificationsEnabled,
+                  (value) async {
+                    await _settingsService.setNotificationsEnabled(value);
+                    if (value) {
+                      await _firebaseService.initializeNotifications();
+                    }
                   },
                 ),
                 const Divider(height: 1),
@@ -124,39 +87,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   'Full Bin Alerts',
                   'Get notified when bins are full',
                   Icons.warning_amber_rounded,
-                  _fullBinAlerts,
-                  (value) {
-                    setState(() {
-                      _fullBinAlerts = value;
-                    });
+                  _settingsService.fullBinAlerts,
+                  (value) async {
+                    await _settingsService.setFullBinAlerts(value);
                   },
-                  enabled: _notificationsEnabled,
+                  enabled: _settingsService.notificationsEnabled,
                 ),
                 const Divider(height: 1),
                 _buildSwitchTile(
                   'Daily Summary',
                   'Daily report of all bins',
                   Icons.summarize,
-                  _dailySummary,
-                  (value) {
-                    setState(() {
-                      _dailySummary = value;
-                    });
+                  _settingsService.dailySummary,
+                  (value) async {
+                    await _settingsService.setDailySummary(value);
                   },
-                  enabled: _notificationsEnabled,
+                  enabled: _settingsService.notificationsEnabled,
                 ),
                 const Divider(height: 1),
                 _buildSwitchTile(
                   'Sound',
                   'Play sound with notifications',
                   Icons.volume_up,
-                  _soundEnabled,
-                  (value) {
-                    setState(() {
-                      _soundEnabled = value;
-                    });
+                  _settingsService.soundEnabled,
+                  (value) async {
+                    await _settingsService.setSoundEnabled(value);
                   },
-                  enabled: _notificationsEnabled,
+                  enabled: _settingsService.notificationsEnabled,
                 ),
               ],
             ),
@@ -165,19 +122,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 24),
 
           // Alert Settings
-          const Text(
+          Text(
             'Alert Settings',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF212121),
+              color: theme.textTheme.bodyLarge?.color,
             ),
           ),
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: theme.cardTheme.color,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
@@ -192,48 +149,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.tune, color: const Color(0xFF3F51B5)),
+                    Icon(Icons.tune, color: theme.primaryColor),
                     const SizedBox(width: 12),
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'Alert Threshold',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF212121),
+                          color: theme.textTheme.bodyLarge?.color,
                         ),
                       ),
                     ),
                     Text(
-                      '$_alertThreshold%',
-                      style: const TextStyle(
+                      '${_settingsService.alertThreshold}%',
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF3F51B5),
+                        color: theme.primaryColor,
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Get notified when bin reaches this level',
                   style: TextStyle(
                     fontSize: 13,
-                    color: Color(0xFF757575),
+                    color: theme.textTheme.bodySmall?.color,
                   ),
                 ),
                 const SizedBox(height: 16),
                 Slider(
-                  value: _alertThreshold.toDouble(),
+                  value: _settingsService.alertThreshold.toDouble(),
                   min: 50,
                   max: 95,
                   divisions: 9,
-                  label: '$_alertThreshold%',
-                  activeColor: const Color(0xFF3F51B5),
-                  onChanged: (value) {
-                    setState(() {
-                      _alertThreshold = value.toInt();
-                    });
+                  label: '${_settingsService.alertThreshold}%',
+                  activeColor: theme.primaryColor,
+                  onChanged: (value) async {
+                    await _settingsService.setAlertThreshold(value.toInt());
                   },
                 ),
               ],
@@ -243,18 +198,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 24),
 
           // App Settings
-          const Text(
+          Text(
             'App Settings',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF212121),
+              color: theme.textTheme.bodyLarge?.color,
             ),
           ),
           const SizedBox(height: 12),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: theme.cardTheme.color,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
@@ -264,53 +219,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ],
             ),
-            child: Column(
-              children: [
-                _buildSettingTile(
-                  'Theme',
-                  'Light mode',
-                  Icons.palette,
-                  () {
-                    // Theme settings
-                  },
-                ),
-                const Divider(height: 1),
-                _buildSettingTile(
-                  'Language',
-                  'English',
-                  Icons.language,
-                  () {
-                    // Language settings
-                  },
-                ),
-                const Divider(height: 1),
-                _buildSettingTile(
-                  'Units',
-                  'Metric',
-                  Icons.straighten,
-                  () {
-                    // Units settings
-                  },
-                ),
-              ],
+            child: _buildSwitchTile(
+              'Dark Mode',
+              _settingsService.isDarkMode ? 'Dark theme enabled' : 'Light theme enabled',
+              Icons.dark_mode,
+              _settingsService.isDarkMode,
+              (value) async {
+                await _settingsService.toggleTheme();
+              },
             ),
           ),
 
           const SizedBox(height: 24),
 
           // Data Management
-          const Text(
+          Text(
             'Data Management',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF212121),
+              color: theme.textTheme.bodyLarge?.color,
             ),
           ),
           const SizedBox(height: 12),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: theme.cardTheme.color,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
@@ -348,18 +282,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 24),
 
           // About
-          const Text(
+          Text(
             'About',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF212121),
+              color: theme.textTheme.bodyLarge?.color,
             ),
           ),
           const SizedBox(height: 12),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: theme.cardTheme.color,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
@@ -402,37 +336,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
 
           const SizedBox(height: 32),
-
-          // Logout Button
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Logout functionality coming soon'),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'Logout',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 32),
         ],
       ),
     );
@@ -446,29 +349,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
     Function(bool) onChanged, {
     bool enabled = true,
   }) {
+    final theme = Theme.of(context);
     return ListTile(
       leading: Icon(
         icon,
-        color: enabled ? const Color(0xFF3F51B5) : Colors.grey,
+        color: enabled ? theme.primaryColor : Colors.grey,
       ),
       title: Text(
         title,
         style: TextStyle(
           fontWeight: FontWeight.w600,
-          color: enabled ? const Color(0xFF212121) : Colors.grey,
+          color: enabled ? theme.textTheme.bodyLarge?.color : Colors.grey,
         ),
       ),
       subtitle: Text(
         subtitle,
         style: TextStyle(
           fontSize: 13,
-          color: enabled ? const Color(0xFF757575) : Colors.grey,
+          color: enabled ? theme.textTheme.bodySmall?.color : Colors.grey,
         ),
       ),
       trailing: Switch(
         value: value,
         onChanged: enabled ? onChanged : null,
-        activeColor: const Color(0xFF3F51B5),
+        activeColor: theme.primaryColor,
       ),
     );
   }
@@ -479,20 +383,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
     IconData icon,
     VoidCallback onTap,
   ) {
+    final theme = Theme.of(context);
     return ListTile(
-      leading: Icon(icon, color: const Color(0xFF3F51B5)),
+      leading: Icon(icon, color: theme.primaryColor),
       title: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontWeight: FontWeight.w600,
-          color: Color(0xFF212121),
+          color: theme.textTheme.bodyLarge?.color,
         ),
       ),
       subtitle: Text(
         subtitle,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 13,
-          color: Color(0xFF757575),
+          color: theme.textTheme.bodySmall?.color,
         ),
       ),
       trailing: Icon(Icons.chevron_right, color: Colors.grey[400]),

@@ -47,6 +47,7 @@ class DefaultFirebaseOptions {
     projectId: 'smartbin-c8ef7',
     authDomain: 'smartbin-c8ef7.firebaseapp.com',
     storageBucket: 'smartbin-c8ef7.firebasestorage.app',
+    databaseURL: 'https://smartbin-c8ef7-default-rtdb.asia-southeast1.firebasedatabase.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
@@ -55,6 +56,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '431080313189',
     projectId: 'smartbin-c8ef7',
     storageBucket: 'smartbin-c8ef7.firebasestorage.app',
+    databaseURL: 'https://smartbin-c8ef7-default-rtdb.asia-southeast1.firebasedatabase.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
@@ -82,5 +84,6 @@ class DefaultFirebaseOptions {
     projectId: 'smartbin-c8ef7',
     authDomain: 'smartbin-c8ef7.firebaseapp.com',
     storageBucket: 'smartbin-c8ef7.firebasestorage.app',
+    databaseURL: 'https://smartbin-c8ef7-default-rtdb.asia-southeast1.firebasedatabase.app',
   );
 }

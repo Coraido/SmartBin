@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smart_bin_app/models/bin_model.dart';
+import 'package:smart_bin_app/models/bin_data.dart';
 import 'package:smart_bin_app/services/firebase_service.dart';
 import 'package:smart_bin_app/screens/bin_details_screen.dart';
 import 'package:smart_bin_app/screens/settings_screen.dart';
@@ -23,11 +23,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _initializeApp() async {
     await _firebaseService.initializeNotifications();
-    await _firebaseService.createInitialBins();
+    await _firebaseService.createInitialBin();
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
@@ -54,9 +56,9 @@ class _HomeScreenState extends State<HomeScreen> {
               _currentIndex = index;
             });
           },
-          selectedItemColor: const Color(0xFF3F51B5),
+          selectedItemColor: theme.primaryColor,
           unselectedItemColor: Colors.grey,
-          backgroundColor: Colors.white,
+          backgroundColor: theme.cardTheme.color,
           type: BottomNavigationBarType.fixed,
           elevation: 0,
           items: const [
@@ -89,12 +91,13 @@ class DashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final FirebaseService firebaseService = FirebaseService();
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
-        child: StreamBuilder<List<BinModel>>(
-          stream: firebaseService.getBinsStream(),
+        child: StreamBuilder<List<BinData>>(
+          stream: firebaseService.getAllBinsStream(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
@@ -120,7 +123,7 @@ class DashboardPage extends StatelessWidget {
                   expandedHeight: 120,
                   floating: false,
                   pinned: true,
-                  backgroundColor: const Color(0xFF3F51B5),
+                  backgroundColor: theme.appBarTheme.backgroundColor,
                   flexibleSpace: FlexibleSpaceBar(
                     title: const Text(
                       'SmartBin',
@@ -134,10 +137,15 @@ class DashboardPage extends StatelessWidget {
                         gradient: LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [
-                            const Color(0xFF3F51B5),
-                            const Color(0xFF5C6BC0),
-                          ],
+                          colors: theme.brightness == Brightness.dark
+                              ? [
+                                  const Color(0xFF1E1E1E),
+                                  const Color(0xFF2D2D2D),
+                                ]
+                              : [
+                                  const Color(0xFF3F51B5),
+                                  const Color(0xFF5C6BC0),
+                                ],
                         ),
                       ),
                     ),
@@ -169,12 +177,12 @@ class DashboardPage extends StatelessWidget {
                         const SizedBox(height: 20),
 
                         // Stats Overview
-                        const Text(
+                        Text(
                           'Overview',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF212121),
+                            color: theme.textTheme.bodyLarge?.color,
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -202,12 +210,12 @@ class DashboardPage extends StatelessWidget {
                         const SizedBox(height: 20),
 
                         // Status Cards
-                        const Text(
+                        Text(
                           'Status Breakdown',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF212121),
+                            color: theme.textTheme.bodyLarge?.color,
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -244,12 +252,12 @@ class DashboardPage extends StatelessWidget {
                         const SizedBox(height: 20),
 
                         // Recent Activity
-                        const Text(
+                        Text(
                           'Recent Activity',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF212121),
+                            color: theme.textTheme.bodyLarge?.color,
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -344,42 +352,47 @@ class DashboardPage extends StatelessWidget {
   }
 
   Widget _buildStatCard(String label, String value, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+    return Builder(
+      builder: (context) {
+        final theme = Theme.of(context);
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: theme.cardTheme.color,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: color, size: 28),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF212121),
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, color: color, size: 28),
+              const SizedBox(height: 12),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: theme.textTheme.bodyLarge?.color,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: theme.textTheme.bodySmall?.color,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Color(0xFF757575),
-            ),
-          ),
-        ],
-      ),
+        );
+      }
     );
   }
 
@@ -417,7 +430,8 @@ class DashboardPage extends StatelessWidget {
     );
   }
 
-  Widget _buildBinListItem(BuildContext context, BinModel bin) {
+  Widget _buildBinListItem(BuildContext context, BinData bin) {
+    final theme = Theme.of(context);
     Color statusColor = bin.status == 'FULL'
         ? Colors.red
         : bin.status == 'OK'
@@ -428,7 +442,7 @@ class DashboardPage extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardTheme.color,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -474,18 +488,18 @@ class DashboardPage extends StatelessWidget {
                 children: [
                   Text(
                     bin.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF212121),
+                      color: theme.textTheme.bodyLarge?.color,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Est. full in ${bin.estimatedFullTime}',
-                    style: const TextStyle(
+                    'Est. full in ${bin.estimatedFullIn}',
+                    style: TextStyle(
                       fontSize: 13,
-                      color: Color(0xFF757575),
+                      color: theme.textTheme.bodySmall?.color,
                     ),
                   ),
                 ],
@@ -509,16 +523,17 @@ class BinsListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final FirebaseService firebaseService = FirebaseService();
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('All Bins', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: const Color(0xFF3F51B5),
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
       ),
-      body: StreamBuilder<List<BinModel>>(
-        stream: firebaseService.getBinsStream(),
+      body: StreamBuilder<List<BinData>>(
+        stream: firebaseService.getAllBinsStream(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -565,7 +580,7 @@ class BinsListPage extends StatelessWidget {
     );
   }
 
-  Widget _buildBinCard(BuildContext context, BinModel bin) {
+  Widget _buildBinCard(BuildContext context, BinData bin) {
     Color statusColor = bin.status == 'FULL'
         ? Colors.red
         : bin.status == 'OK'

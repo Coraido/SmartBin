@@ -22,7 +22,10 @@ class BinCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Card(
+      color: theme.cardTheme.color,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20.0),
       ),
@@ -51,10 +54,10 @@ class BinCard extends StatelessWidget {
                   Center(
                     child: Text(
                       '$fillLevel%',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF212121),
+                        color: theme.textTheme.bodyLarge?.color,
                       ),
                     ),
                   ),
@@ -69,26 +72,26 @@ class BinCard extends StatelessWidget {
                 children: [
                   Text(
                     binName,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF212121),
+                      color: theme.textTheme.bodyLarge?.color,
                     ),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     'Fill level: $fillLevel%',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
-                      color: Color(0xFF757575),
+                      color: theme.textTheme.bodySmall?.color,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Estimated full in $estimatedFullTime',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
-                      color: Color(0xFF757575),
+                      color: theme.textTheme.bodySmall?.color,
                     ),
                   ),
                 ],
