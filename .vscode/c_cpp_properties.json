@@ -6,7 +6,8 @@
                 "${workspaceFolder}/**",
                 "C:/Users/chanf/AppData/Local/Arduino15/packages/esp32/hardware/esp32/*/cores/esp32",
                 "C:/Users/chanf/AppData/Local/Arduino15/packages/esp32/hardware/esp32/*/libraries/**",
-                "C:/Users/chanf/Documents/Arduino/libraries/**"
+                "C:/Users/chanf/Documents/Arduino/libraries/**",
+                "C:/Users/chanf/OneDrive/Documents/Arduino/libraries/**"
             ],
             "defines": [
                 "_DEBUG",
