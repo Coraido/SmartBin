@@ -44,7 +44,7 @@ class _MyBinsScreenState extends State<MyBinsScreen> {
         _notifiedBins.add(bin.id);
         
         // Show in-app notification
-        if (mounted && _settingsService.soundEnabled) {
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Row(

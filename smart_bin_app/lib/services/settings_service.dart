@@ -81,9 +81,9 @@ class SettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Set alert threshold (50-95%)
+  /// Set alert threshold (0-100%)
   Future<void> setAlertThreshold(int value) async {
-    _alertThreshold = value.clamp(50, 95);
+    _alertThreshold = value.clamp(0, 100);
     await _prefs?.setInt(_keyAlertThreshold, _alertThreshold);
     notifyListeners();
   }
@@ -106,9 +106,9 @@ class SettingsService extends ChangeNotifier {
 
   /// Check if a bin fill level should trigger an alert
   bool shouldAlert(int fillLevel) {
-    return notificationsEnabled && 
-           fullBinAlerts && 
-           fillLevel >= alertThreshold;
+    return _notificationsEnabled && 
+           _fullBinAlerts && 
+           fillLevel >= _alertThreshold;
   }
 
   /// Reset all settings to defaults
