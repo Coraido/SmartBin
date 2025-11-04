@@ -26,7 +26,7 @@ const int trigPin = 27;     // Ultrasonic sensor trigger pin
 const int echoPin = 33;     // Ultrasonic sensor echo pin
 
 // ===== Configuration Settings =====
-const int binHeight = 9;             // Height of bin in cm (measured: sensor to bottom when empty)
+const int binHeight = 10;             // Height of bin in cm (measured: sensor to bottom when empty)
 const int fullThreshold = 80;        // Percentage when bin is considered full
 
 // ===== Global Variables =====

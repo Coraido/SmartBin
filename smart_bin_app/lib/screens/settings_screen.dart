@@ -93,28 +93,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                   enabled: _settingsService.notificationsEnabled,
                 ),
-                const Divider(height: 1),
-                _buildSwitchTile(
-                  'Daily Summary',
-                  'Daily report of all bins',
-                  Icons.summarize,
-                  _settingsService.dailySummary,
-                  (value) async {
-                    await _settingsService.setDailySummary(value);
-                  },
-                  enabled: _settingsService.notificationsEnabled,
-                ),
-                const Divider(height: 1),
-                _buildSwitchTile(
-                  'Sound',
-                  'Play sound with notifications',
-                  Icons.volume_up,
-                  _settingsService.soundEnabled,
-                  (value) async {
-                    await _settingsService.setSoundEnabled(value);
-                  },
-                  enabled: _settingsService.notificationsEnabled,
-                ),
               ],
             ),
           ),
