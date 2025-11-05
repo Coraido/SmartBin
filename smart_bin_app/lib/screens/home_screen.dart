@@ -3,7 +3,7 @@ import 'package:smart_bin_app/models/bin_data.dart';
 import 'package:smart_bin_app/services/firebase_service.dart';
 import 'package:smart_bin_app/screens/bin_details_screen.dart';
 import 'package:smart_bin_app/screens/settings_screen.dart';
-
+import 'package:smart_bin_app/services/settings_service.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -108,7 +108,8 @@ class DashboardPage extends StatelessWidget {
             }
 
             final bins = snapshot.data ?? [];
-            final fullBins = bins.where((b) => b.status == 'FULL').length;
+            final settingsService = SettingsService(); // Get an instance of the service
+            final fullBins = bins.where((b) => settingsService.shouldAlert(b.fillLevel)).length;
             final inUseBins = bins.where((b) => b.status == 'IN USE').length;
             final emptyBins = bins.where((b) => b.status == 'EMPTY').length;
             final averageFillLevel = bins.isEmpty

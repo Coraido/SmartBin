@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:smart_bin_app/screens/get_started_screen.dart';
@@ -5,18 +7,39 @@ import 'package:smart_bin_app/screens/home_screen.dart';
 import 'package:smart_bin_app/services/settings_service.dart';
 import 'firebase_options.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  
-  // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  
-  // Initialize Settings Service
-  await SettingsService().init();
-  
-  runApp(const MyApp());
+void main() {
+  runZonedGuarded<Future<void>>(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+
+    // Initialize Firebase if it's not already initialized
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
+
+    // Initialize Settings Service
+    await SettingsService().init();
+
+    runApp(const MyApp());
+  }, (error, stack) {
+    // If an error occurs, show it on the screen
+    runApp(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'An error occurred during app initialization:\n\n$error\n\nStack Trace:\n$stack',
+                textAlign: TextAlign.left,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  });
 }
 
 class MyApp extends StatefulWidget {
