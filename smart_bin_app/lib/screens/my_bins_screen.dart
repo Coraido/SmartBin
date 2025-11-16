@@ -23,12 +23,10 @@ class _MyBinsScreenState extends State<MyBinsScreen> {
   }
 
   Future<void> _initializeApp() async {
-    // Initialize notifications if enabled
     if (_settingsService.notificationsEnabled) {
       await _firebaseService.initializeNotifications();
     }
     
-    // Create initial bin if needed (for first run)
     await _firebaseService.createInitialBin();
   }
 
@@ -39,11 +37,9 @@ class _MyBinsScreenState extends State<MyBinsScreen> {
 
     for (var bin in bins) {
       if (_settingsService.shouldAlert(bin.fillLevel) && !_notifiedBins.contains(bin.id)) {
-        // Send notification
         _firebaseService.sendBinAlert(bin);
         _notifiedBins.add(bin.id);
         
-        // Show in-app notification
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -65,14 +61,12 @@ class _MyBinsScreenState extends State<MyBinsScreen> {
                 label: 'VIEW',
                 textColor: Colors.white,
                 onPressed: () {
-                  // Navigate to bin details
                 },
               ),
             ),
           );
         }
       } else if (bin.fillLevel < _settingsService.alertThreshold) {
-        // Remove from notified set if bin is no longer full
         _notifiedBins.remove(bin.id);
       }
     }
@@ -128,7 +122,6 @@ class _MyBinsScreenState extends State<MyBinsScreen> {
             child: IconButton(
               icon: Icon(Icons.notifications_outlined, color: theme.primaryColor),
               onPressed: () {
-                // Show notification settings or history
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Notifications are enabled'),
@@ -144,7 +137,6 @@ class _MyBinsScreenState extends State<MyBinsScreen> {
         stream: _firebaseService.getAllBinsStream(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            // Check for alerts when data updates
             _checkBinAlerts(snapshot.data!);
           }
           
@@ -196,8 +188,6 @@ class _MyBinsScreenState extends State<MyBinsScreen> {
               ),
             );
           }
-
-          // Find last emptied bin for the bottom section (simplified for now)
           
           return Column(
             children: [

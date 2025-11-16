@@ -46,7 +46,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Notifications Section
           Text(
             'Notifications',
             style: TextStyle(
@@ -99,7 +98,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const SizedBox(height: 24),
 
-          // Alert Settings
           Text(
             'Alert Settings',
             style: TextStyle(
@@ -175,7 +173,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const SizedBox(height: 24),
 
-          // App Settings
           Text(
             'App Settings',
             style: TextStyle(
@@ -210,7 +207,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const SizedBox(height: 24),
 
-          // Data Management
           Text(
             'Data Management',
             style: TextStyle(
@@ -259,7 +255,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const SizedBox(height: 24),
 
-          // About
           Text(
             'About',
             style: TextStyle(

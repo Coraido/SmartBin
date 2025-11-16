@@ -14,7 +14,6 @@ class GetStartedScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Custom Bin Icon
                 Container(
                   width: 200,
                   height: 200,
@@ -33,7 +32,6 @@ class GetStartedScreen extends StatelessWidget {
                       child: Column(
                         children: [
                           const SizedBox(height: 12),
-                          // Lid
                           Container(
                             width: 80,
                             height: 25,
@@ -43,7 +41,6 @@ class GetStartedScreen extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          // Bin body circle
                           Container(
                             width: 50,
                             height: 50,

@@ -35,7 +35,6 @@ class BinDetailsScreen extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header Card with Status
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(32),
@@ -110,7 +109,6 @@ class BinDetailsScreen extends StatelessWidget {
               ),
             ),
 
-            // Information Cards
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -126,7 +124,6 @@ class BinDetailsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
 
-                  // Info Cards
                   _buildInfoCard(
                     'Fill Level',
                     '${bin.fillLevel}%',
@@ -153,7 +150,6 @@ class BinDetailsScreen extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // Action Buttons
                   const Text(
                     'Quick Actions',
                     style: TextStyle(
@@ -201,7 +197,6 @@ class BinDetailsScreen extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // Tips Card
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
@@ -382,7 +377,6 @@ class BinDetailsScreen extends StatelessWidget {
               title: const Text('Edit Bin Name'),
               onTap: () {
                 Navigator.pop(context);
-                // Add edit functionality here
               },
             ),
             ListTile(
@@ -390,7 +384,6 @@ class BinDetailsScreen extends StatelessWidget {
               title: const Text('Notification Settings'),
               onTap: () {
                 Navigator.pop(context);
-                // Add notification settings here
               },
             ),
             ListTile(
@@ -422,8 +415,8 @@ class BinDetailsScreen extends StatelessWidget {
             onPressed: () async {
               await firebaseService.deleteBin(bin.id);
               if (context.mounted) {
-                Navigator.pop(context); // Close dialog
-                Navigator.pop(context); // Go back to home
+                Navigator.pop(context);
+                Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Bin deleted successfully'),

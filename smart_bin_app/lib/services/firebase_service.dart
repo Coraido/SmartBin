@@ -10,10 +10,8 @@ class FirebaseService {
   final DatabaseReference _database = FirebaseDatabase.instance.ref();
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
 
-  // Initialize Firebase Messaging
   Future<void> initializeNotifications() async {
     try {
-      // Request permission for notifications
       NotificationSettings settings = await _messaging.requestPermission(
         alert: true,
         badge: true,
@@ -24,13 +22,11 @@ class FirebaseService {
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
         print('✅ User granted notification permission');
         
-        // Get FCM token
         try {
           String? token = await _messaging.getToken();
           if (token != null) {
             print('✅ FCM Token: $token');
             
-            // Save token to Realtime Database
             await _database.child('deviceTokens/currentDevice').set({
               'token': token,
               'updatedAt': ServerValue.timestamp,
@@ -50,7 +46,6 @@ class FirebaseService {
         print('⚠️ Notification permission not determined');
       }
 
-      // Handle foreground messages
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         print('📬 Got a message whilst in the foreground!');
         print('Message data: ${message.data}');
@@ -66,7 +61,6 @@ class FirebaseService {
     }
   }
 
-  // Get bin data stream
   Stream<BinData?> getBinDataStream(String binId) {
     return _database.child('bins/$binId').onValue.map((event) {
       if (event.snapshot.value != null) {
@@ -76,7 +70,6 @@ class FirebaseService {
     });
   }
 
-  // Get all bins stream
   Stream<List<BinData>> getAllBinsStream() {
     return _database.child('bins').onValue.map((event) {
       List<BinData> bins = [];
@@ -91,7 +84,6 @@ class FirebaseService {
     });
   }
 
-  // Update bin data (for testing purposes)
   Future<void> updateBinData(
     String binId, {
     String? name,
@@ -109,7 +101,6 @@ class FirebaseService {
     await _database.child('bins/$binId').update(updates);
   }
 
-  // Mark bin as emptied
   Future<void> markBinAsEmptied(String binId) async {
     try {
       await _database.child('bins/$binId').update({
@@ -123,7 +114,6 @@ class FirebaseService {
     }
   }
 
-  // Delete a bin
   Future<void> deleteBin(String binId) async {
     try {
       await _database.child('bins/$binId').remove();
@@ -132,15 +122,12 @@ class FirebaseService {
     }
   }
 
-  // Check if bin needs notification based on settings
   bool shouldNotify(BinData binData, int alertThreshold) {
     return binData.fillLevel >= alertThreshold;
   }
   
-  // Send notification for bin alert
   Future<void> sendBinAlert(BinData binData) async {
     try {
-      // Save notification to database for history
       await _database.child('notifications').push().set({
         'binId': binData.id,
         'binName': binData.name,
@@ -155,7 +142,6 @@ class FirebaseService {
     }
   }
 
-  // Create initial bin for testing
   Future<void> createInitialBin() async {
     try {
       await _database.child('bins/kitchen_bin').set({

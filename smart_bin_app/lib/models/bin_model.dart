@@ -19,14 +19,12 @@ class BinModel {
     required this.lastUpdated,
   });
 
-  // Get status based on fill level
   static String getStatus(int fillLevel) {
     if (fillLevel >= 80) return 'FULL';
     if (fillLevel >= 40) return 'OK';
     return 'EMPTY';
   }
 
-  // Get color based on status
   static String getStatusColor(String status) {
     switch (status) {
       case 'FULL':
@@ -38,7 +36,6 @@ class BinModel {
     }
   }
 
-  // Calculate estimated time until full
   static String calculateEstimatedTime(int fillLevel, DateTime lastEmptied) {
     if (fillLevel >= 95) return '1-2 hours';
     if (fillLevel >= 80) return '3-6 hours';
@@ -47,7 +44,6 @@ class BinModel {
     return '7+ days';
   }
 
-  // Convert from Firestore document
   factory BinModel.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     int fillLevel = data['fillLevel'] ?? 0;
@@ -64,7 +60,6 @@ class BinModel {
     );
   }
 
-  // Convert to Firestore document
   Map<String, dynamic> toFirestore() {
     return {
       'name': name,

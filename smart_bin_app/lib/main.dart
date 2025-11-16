@@ -11,19 +11,16 @@ void main() {
   runZonedGuarded<Future<void>>(() async {
     WidgetsFlutterBinding.ensureInitialized();
 
-    // Initialize Firebase if it's not already initialized
     if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
     }
 
-    // Initialize Settings Service
     await SettingsService().init();
 
     runApp(const MyApp());
   }, (error, stack) {
-    // If an error occurs, show it on the screen
     runApp(
       MaterialApp(
         home: Scaffold(
@@ -55,7 +52,6 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    // Listen to settings changes
     _settingsService.addListener(_onSettingsChanged);
   }
 
@@ -75,7 +71,6 @@ class _MyAppState extends State<MyApp> {
       title: 'SmartBin',
       themeMode: _settingsService.themeMode,
       
-      // Light Theme
       theme: ThemeData(
         brightness: Brightness.light,
         primarySwatch: Colors.blue,
@@ -97,7 +92,6 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
       
-      // Dark Theme
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         primarySwatch: Colors.blue,

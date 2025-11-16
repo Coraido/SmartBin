@@ -35,7 +35,6 @@ class BinCard extends StatelessWidget {
         padding: const EdgeInsets.all(20.0),
         child: Row(
           children: [
-            // Circular Progress Indicator
             SizedBox(
               width: 90,
               height: 90,
@@ -65,7 +64,6 @@ class BinCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 20),
-            // Bin Information
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,7 +95,6 @@ class BinCard extends StatelessWidget {
                 ],
               ),
             ),
-            // Status Badge
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(

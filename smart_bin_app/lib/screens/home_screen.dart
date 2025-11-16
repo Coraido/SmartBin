@@ -119,7 +119,6 @@ class DashboardPage extends StatelessWidget {
 
             return CustomScrollView(
               slivers: [
-                // App Bar
                 SliverAppBar(
                   expandedHeight: 120,
                   floating: false,
@@ -166,18 +165,15 @@ class DashboardPage extends StatelessWidget {
                   ],
                 ),
 
-                // Content
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Welcome Card
                         _buildWelcomeCard(context, bins.length),
                         const SizedBox(height: 20),
 
-                        // Stats Overview
                         Text(
                           'Overview',
                           style: TextStyle(
@@ -210,7 +206,6 @@ class DashboardPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 20),
 
-                        // Status Cards
                         Text(
                           'Status Breakdown',
                           style: TextStyle(
@@ -252,7 +247,6 @@ class DashboardPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 20),
 
-                        // Recent Activity
                         Text(
                           'Recent Activity',
                           style: TextStyle(
